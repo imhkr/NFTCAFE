@@ -6,6 +6,9 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      backgroundImage: {
+        'hero-pattern': "url('/assets/Logo-bg.png')",
+      },
       colors: {
         'regal-blue': '#243c5a',
         'nft-dark': '#24252D',

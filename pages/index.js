@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { Banner, CreaterCard, NFTCard } from '../components';
+import { Banner, CreaterCard, NFTCard, Button } from '../components';
 import images from '../assets';
 import { makeId } from '../utils/makeId';
 
@@ -84,24 +84,35 @@ const Home = () => {
         </div>
         <div className="mt-10">
           <div className="flexBetween mx-4 xs:mx-0 minlg:mx-8 sm:flex-col sm:items-start">
-            <h1 className="flex-1 before:font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold sm:mb-4">Hot Bids</h1>
-            <div>
-              Search Bar
-            </div>
-            <div className="mt-3 w-full flex flex-wrap justify-start md:justify-center">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-                <NFTCard
-                  key={`nft-${i}`}
-                  nft={{
-                    i,
-                    name: `Nifty NFT ${i}`,
-                    seller: `0x${makeId(3)}...${makeId(4)}`,
-                    owner: `0x${makeId(3)}...${makeId(4)}`,
-                    description: 'Cool NFT on Sale',
-                  }}
+            <h1 className="flex-1 before:first:font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold sm:mb-4">Hot Bids</h1>
+            <div className="flexBetween md:w-full minlg:w-557 w-357 mt-6 dark:bg-nft-black-2 bg-white border dark:border-nft-black-2 border-nft-gray-2 rounded-md">
+              <input
+                type="search"
+                placeholder="Search NFT"
+                className="h-full flex-1 w-full dark:bg-nft-black-2 bg-white px-4 rounded-md dark:text-white text-nft-black-1 font-normal text-xs minlg:text-lg outline-none"
+              />
+              <div className="flex-initial">
+                <Button
+                  BtnName="Search"
+                  classStyles="rounded-md"
                 />
-              ))}
+              </div>
             </div>
+          </div>
+          <div className="mt-3 px-14 w-full flex flex-wrap justify-start md:justify-center">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+              <NFTCard
+                key={`nft-${i}`}
+                nft={{
+                  i,
+                  name: `Nifty NFT ${i}`,
+                  price: (10 - i * 0.534),
+                  seller: `0x${makeId(3)}...${makeId(4)}`,
+                  owner: `0x${makeId(3)}...${makeId(4)}`,
+                  description: 'Cool NFT on Sale',
+                }}
+              />
+            ))}
           </div>
         </div>
       </div>
