@@ -6,14 +6,19 @@ import { useTheme } from 'next-themes';
 import { Button, Input } from '../components';
 import images from '../assets';
 
+import { NFTContext } from '../context/NFTContext';
+
 const CreateNFT = () => {
+  const { uploadToIPFS } = useContext(NFTContext);
   const theme = useTheme();
   const [fileUrl, setfileUrl] = useState(null);
   const [formInput, setformInput] = useState({ price: '', name: '', description: ' ' });
   // u{price:'',name:'',description:' '}p;fs to store our image like a blockchainw way.
-  const onDrop = useCallback(() => {
+  const onDrop = useCallback(async (acceptedFile) => {
     // upload image to the ipfs
-
+    const url = await uploadToIPFS(acceptedFile[0]);
+    console.log({ url });
+    setfileUrl(url);
   }, []);
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
     onDrop,
