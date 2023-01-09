@@ -5,7 +5,20 @@ import axios from 'axios';
 import { create as ipfsHttpClient } from 'ipfs-http-client';
 import { MarketAddress, MarketAddressABI } from './constant';
 
-const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0');
+const projectId = process.env.NEXT_PUBLIC_IPFS_PROJECT_ID;
+const projectSecret = process.env.NEXT_PUBLIC_API_KEY_SECRET;
+const auth = `Basic ${Buffer.from(`${projectId}:${projectSecret}`).toString('base64')}`;
+
+const fetchContract = (signerOrProvider) => new ethers.Contract(MarketAddress, MarketAddressABI, signerOrProvider);
+
+const client = ipfsHttpClient({
+  host: 'ipfs.infura.io',
+  port: 5001,
+  protocol: 'https',
+  headers: {
+    authorization: auth,
+  },
+});
 export const NFTContext = React.createContext();
 
 export const NFTProvider = ({ children }) => {
@@ -33,18 +46,62 @@ export const NFTProvider = ({ children }) => {
     window.location.reload();
   };
 
-  const uploadtoIFPS = async (file) => {
+  // const uploadToIPFS = async (file) => {
+  //   try {
+  //     const added = await client.add({ content: file });
+
+  //     const url = `https://ipfs.infura.io/ipfs/${added.path}`;
+  //     return url;
+  //   } catch (error) {
+  //     console.log('Error uploading file to IPFS');
+  //   }
+  // };
+  const uploadToIPFS = async (file) => {
+    const subdomain = 'https://nftcafe-nft-marketplace.infura-ipfs.io';
     try {
       const added = await client.add({ content: file });
-
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-      return url;
+      const URL = `${subdomain}/ipfs/${added.path}`;
+      return URL;
     } catch (error) {
-      console.log('Error uploading file to IPFS');
+      console.log('Error uploading file to IPFS.');
     }
   };
+
+  const CreateNFT = async (formInput, fileUrl, router) => {
+    const { name, description, price } = formInput;
+    if (!name || !description || !price || !fileUrl) return;
+    const data = JSON.stringify({ name, description, image: fileUrl });
+    const subdomain = 'https://nftcafe-nft-marketplace.infura-ipfs.io';
+    try {
+      const added = await client.add(data);
+      const url = `${subdomain}/ipfs/${added.path}`;
+      // now save to polygon
+
+      await createSale(url, price);
+      router.push('/');
+    } catch (error) {
+      console.log('Error uploading file to IPFS.');
+    }
+  };
+
+  const createSale = async (url, formInputPrice, isReselling, id) => {
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    const price = ethers.utils.parseUnits(formInputPrice, 'ether');
+    const contract = fetchContract(signer);
+    // calling a function from contract takes time
+    const listingPrice = await contract.getListingPrice();
+
+    const transaction = await contract.createToken(url, price, { value: listingPrice.toString() });
+
+    await transaction.wait();
+  };
+
   return (
-    <NFTContext.Provider value={{ nftCurrency, connectWallet, currentAccount, uploadtoIFPS }}>
+    <NFTContext.Provider value={{ nftCurrency, connectWallet, currentAccount, uploadToIPFS, CreateNFT }}>
       {children}
     </NFTContext.Provider>
   );
