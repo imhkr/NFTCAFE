@@ -98,13 +98,20 @@ const NFTDetails = () => {
                   Sorry,You cannot buy your own NFT.
                 </p>
               )
-                : (
-                  <Button
-                    BtnName={`Buy for ${nft.price} ${nftCurrency}`}
-                    classStyles="mr-5 sm:mr-0 rounded-xl"
-                    handleClick={() => setPaymentModal(true)}
-                  />
-                )
+                : currentAccount === nft.owner.toLowerCase()
+                  ? (
+                    <Button
+                      BtnName="List on Markeplace"
+                      classStyles="mr-5 sm:mr-0 sm:mb-5 rounded-xl"
+                      handleClick={() => router.push(`/resell-nft?tokenId=${nft.tokenId}&tokenURI=${nft.tokenURI}`)}
+                    />
+                  ) : (
+                    <Button
+                      BtnName={`Buy for ${nft.price} ${nftCurrency}`}
+                      classStyles="mr-5 sm:mr-0 sm:mb-5 rounded-xl"
+                      handleClick={() => setPaymentModal(true)}
+                    />
+                  )
             }
         </div>
       </div>
@@ -130,7 +137,8 @@ const NFTDetails = () => {
         handleClose={() => setPaymentModal(false)}
       />
       )}
-      {successModal && 
+      {successModal
+      && (
       <Modal
         header="Payment Successful"
         body={(
@@ -138,7 +146,7 @@ const NFTDetails = () => {
             <div className="relative w-52 h-52">
               <Image src={nft.image} objectFit="cover" layout="fill" />
             </div>
-            <p className="font-poppins dark:text-white text-nft-black-1 font-normal  text-sm minlg:text-xl mt-10">You successfully purchased <span className="font-semibold">{" "+nft.name}</span> from <span className="font-semibold"> {shortenAddress(nft.seller)}</span></p>
+            <p className="font-poppins dark:text-white text-nft-black-1 font-normal  text-sm minlg:text-xl mt-10">You successfully purchased <span className="font-semibold">{` ${nft.name}`}</span> from <span className="font-semibold"> {shortenAddress(nft.seller)}</span></p>
           </div>
 )}
         footer={(
@@ -150,9 +158,9 @@ const NFTDetails = () => {
             />
           </div>
         )}
-        handleClose={() => setPaymentModal(faYoulse)}
+        handleClose={() => setPaymentModal(false)}
       />
-      }
+      )}
     </div>
   );
 };

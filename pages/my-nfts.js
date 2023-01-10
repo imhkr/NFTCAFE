@@ -10,6 +10,14 @@ const MyNFTs = () => {
   const [nfts, setnfts] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    fetchMyNFTsOrListedNFTs()
+      .then((items) => {
+        setnfts(items);
+        setIsLoading(false);
+        console.log(items);
+      });
+  }, []);
   if (isLoading) {
     return (
       <div className="flexStart min-h-screen">
@@ -47,7 +55,7 @@ const MyNFTs = () => {
               Search Bar
             </div>
             <div>
-              {nfts.map((nft) => <NFTCard key={nft.token} nft={nft} />)}
+              {nfts.map((nft) => <NFTCard key={nft.token} nft={nft} onPofilePage />)}
             </div>
           </div>
         )
