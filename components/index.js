@@ -7,5 +7,7 @@ import Banner from './Banner';
 import CreaterCard from './CreaterCard';
 import NFTCard from './NFTCard';
 import Input from './Input';
+import Loader from './Loader';
+import Modal from './Modal';
 
-export { Navbar, Footer, Button, Banner, CreaterCard, NFTCard, Input };
+export { Navbar, Footer, Button, Banner, CreaterCard, NFTCard, Input, Loader, Modal };
