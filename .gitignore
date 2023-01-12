@@ -2,7 +2,7 @@
 .secret
 
 node_modules
-
+.eslintrc.js
 # next.js
 /.next/
 /out/
