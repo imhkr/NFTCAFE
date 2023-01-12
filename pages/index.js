@@ -1,140 +1,237 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { Banner, CreaterCard, NFTCard, Button } from '../components';
-import images from '../assets';
-import { makeId } from '../utils/makeId';
+
 import { NFTContext } from '../context/NFTContext';
+import { Banner, CreatorCard, Loader, NFTCard, SearchBar } from '../components';
+import images from '../assets';
+// function that makes a random id
+import { makeId } from '../utils/makeId';
+import { getCreators } from '../utils/getTopCreators';
+import { shortenAddress } from '../utils/shortenAddress';
 
 const Home = () => {
-  const { fetchNFTs } = useContext(NFTContext);
-  const [hideButtons, sethideButtons] = useState(false);
-  const [nfts, setnfts] = useState([]);
+  // state to check when to show scroll buttons
+  const [hideButtons, setHideButtons] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [nfts, setNfts] = useState([]);
+
+  const [nftsCopy, setNftsCopy] = useState([]);
+  const [activeSelect, setActiveSelect] = useState('Recently added');
+
+  // ref to identify scroll element and its parent
   const parentRef = useRef(null);
   const scrollRef = useRef(null);
+  // theme hook to get the current theme
   const { theme } = useTheme();
+  // context to get the data from the context
+  const { fetchNFTs } = useContext(NFTContext);
 
   useEffect(() => {
+    // fetch the nfts from the context
     fetchNFTs()
       .then((items) => {
-        setnfts(items);
-        console.log(items);
+        setNfts(items);
+        setNftsCopy(items);
+        setIsLoading(false);
       });
   }, []);
 
+  useEffect(() => {
+    const sortedNfts = [...nfts];
+
+    switch (activeSelect) {
+      case 'Price (low to high)':
+        setNfts(sortedNfts.sort((a, b) => a.price - b.price));
+        break;
+      case 'Price (high to low)':
+        setNfts(sortedNfts.sort((a, b) => b.price - a.price));
+        break;
+      case 'Recently added':
+        setNfts(sortedNfts.sort((a, b) => b.tokenId - a.tokenId));
+        break;
+      default:
+        setNfts(nfts);
+        break;
+    }
+  }, [activeSelect]);
+
+  const onHandleSearch = (value) => {
+    // name object is immediatly destructured from the nft object
+    // and used for filtering. does not matter if lowercase or uppercase
+    // thus all is made into lower for search
+    const filteredNfts = nfts.filter(({ name }) => name.toLowerCase().includes(value.toLowerCase()));
+
+    if (filteredNfts.length) {
+      setNfts(filteredNfts);
+    } else {
+      setNfts(nftsCopy);
+    }
+  };
+
+  const onClearSearch = () => {
+    if (nfts.length && nftsCopy.length) {
+      setNfts(nftsCopy);
+    }
+  };
+
+  // function to check which direction to scroll when clicked
   const handleScroll = (direction) => {
     const { current } = scrollRef;
-    const scrollAmount = window.innerWidth > 1080 ? 300 : 210;
+
+    const scrollAmount = window.innerWidth > 1800 ? 270 : 210;
+
     if (direction === 'left') {
       current.scrollLeft -= scrollAmount;
     } else {
       current.scrollLeft += scrollAmount;
     }
   };
+
+  // check if the scrollable with of the section is greater than the width of its parent.
+  // this would mean there is extra space and the scroll buttons should not be shown
   const isScrollable = () => {
     const { current } = scrollRef;
     const { current: parent } = parentRef;
-    if (current?.scrollWidth >= parent?.offsetWidth) {
-      sethideButtons(false);
+
+    if (current?.scrollWidth > parent?.offsetWidth) {
+      setHideButtons(false);
     } else {
-      sethideButtons(true);
+      setHideButtons(true);
     }
   };
-  useEffect(() => () => {
+
+  // useEffect to check run isScrollable function when the page loads
+  // to call it again everytime the window is resized and remove the event listener after calling function
+  useEffect(() => {
     isScrollable();
     window.addEventListener('resize', isScrollable);
+
     return () => {
       window.removeEventListener('resize', isScrollable);
     };
   });
 
-  return (
-    <div className="flex justify-center sm:px-4 p-12">
-      <div className="w-full minmd:w-4/5">
-        <Banner
-          parentStyles="justify-start mb-6 h-72 sm:h-69 p-12 xs:p-4 xs:h-44 rounded-3xl"
-          childStyles="md:text:4xl sm:text-2xl xs=text-xl text-left"
-          BannerText="Discover, collect, and sell extraordinary NFTs"
-        />
-        <div>
-          <h1 className="font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold ml-4 xs:ml-0">Best Creators</h1>
-          <div className="relative flex-1 max-w-full flex mt-3" ref={[parentRef]}>
-            <div className="flex flex-row w-max overflow-x-scroll no-scrollbar select-none" ref={scrollRef}>
-              {[1, 2, 3, 4, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-                <CreaterCard
-                  key={`creater-${i}`}
-                  rank={i}
-                  createrImage={images[`creator${i}`]}
-                  createrName={`0x${makeId(3)}...${makeId(4)}`}
-                  createrEths={10 - i * 0.5}
-                />
-              ))}
-              {hideButtons
-              && (
-              <>
-                <div onClick={() => handleScroll('left')} className="absolute w-8 h-8 minlg:w-12 minlg:h-12 top-45 cursor-pointer left-0">
-                  <Image
-                    src={images.left}
-                    layout="fill"
-                    objectFit='contain alt="left-arrow'
-                    className={theme === 'light' && 'filter invert'}
-                  />
-                </div>
-                <div onClick={() => handleScroll('right')} className="absolute w-8 h-8 minlg:w-12 minlg:h-12 top-45 cursor-pointer right-0">
-                  <Image
-                    src={images.right}
-                    layout="fill"
-                    objectFit='contain alt="right-arrow'
-                    className={theme === 'light' && 'filter invert'}
-                  />
-                </div>
-              </>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="mt-10">
-          <div className="flexBetween mx-4 xs:mx-0 minlg:mx-8 sm:flex-col sm:items-start">
-            <h1 className="flex-1 before:first:font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold sm:mb-4">Hot Bids</h1>
-            <div className="flexBetween md:w-full minlg:w-557 w-357 mt-6 dark:bg-nft-black-2 bg-white border dark:border-nft-black-2 border-nft-gray-2 rounded-md">
-              <input
-                type="search"
-                placeholder="Search NFT"
-                className="h-full flex-1 w-full dark:bg-nft-black-2 bg-white px-4 rounded-md dark:text-white text-nft-black-1 font-normal text-xs minlg:text-lg outline-none"
-              />
-              <div className="flex-initial">
-                <Button
-                  BtnName="Search"
-                  classStyles="rounded-md"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="mt-3 px-14 w-full flex flex-wrap justify-start md:justify-center">
-            {
-            nfts.map((nft) => <NFTCard key={nft.tokenId} nft={nft} />)
-          }
+  const topCreators = getCreators(nftsCopy);
+  // console.log('top Creators', topCreators);
+  // console.log('nfts', nfts);
 
-            {
-              /*
-              demo nfts {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-              <NFTCard
-                key={`nft-${i}`}
-                nft={{
-                  i,
-                  name: `Nifty NFT ${i}`,
-                  price: (10 - i * 0.534),
-                  seller: `0x${makeId(3)}...${makeId(4)}`,
-                  owner: `0x${makeId(3)}...${makeId(4)}`,
-                  description: 'Cool NFT on Sale',
-                }}
-              />
-            ))} */}
-          </div>
+  return (
+    <div>
+      <div className="flex justify-center sm:px-4 p-12">
+        <div className="w-full minmd:w-4/5">
+          <Banner
+            parentStyles="justify-start mb-6 h-72 sm:h-60 p-12 xs:p-2 xs:h-44 rounded-3xl"
+            childStyles="md:text-4xl sm:text-2xl xs:text-xl text-left"
+            BannerText={<>Discover, collect and sell extraordinary NFTs </>}
+          />
+          {/* !isLoading && !nfts.length */}
+          {!isLoading && !nfts.length ? (
+            <h1 className="font-poppins dark:text-white text-nft-black-1 text-2xl minlf:text-4xl font-semibold ml-4 xs:ml-0">
+              That&apos;s weird... No NFTs found. Please try again later.
+            </h1>
+          ) : isLoading ? <Loader /> : (
+            <>
+              <div>
+                <h1 className="font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold ml-4 xs:ml-0">
+                  Top Creators
+                </h1>
+                <div
+                  className="relative flex-1 max-w-full flex mt-3"
+              // use of reference from above
+                  ref={parentRef}
+                >
+                  <div
+                    className="flex flex-row w-max overflow-x-scroll no-scrollbar select-none"
+                    ref={scrollRef}
+                  >
+                    {topCreators && topCreators.map((creator, i) => (
+                      // custom component  from import
+                      <CreatorCard
+                        key={`creator-${i}`}
+                        rank={i + 1}
+                        creatorImage={images[`creator${i + 1}`]}
+                        creatorName={shortenAddress(creator.seller)}
+                        creatorEths={creator.sum}
+                      />
+                    ))}
+                    {/* map through the top creators */}
+                    {/* {[6, 7, 8, 9, 10].map((i) => (
+                      // custom component  from import
+                      <CreatorCard
+                        key={`creator-${i}`}
+                        rank={i}
+                        creatorImage={images[`creator${i}`]}
+                        creatorName={`0x${makeId(3)}...${makeId(4)}`}
+                        creatorEths={10 - i * 0.5}
+                      />
+                    ))} */}
+                    {/* when hideButton state is true show buttons */}
+                    {!hideButtons && (
+                    <>
+                      <div
+                      // call above function to scroll left
+                        onClick={() => handleScroll('left')}
+                        className="absolute w-8 h-8 minlg:w-12 minlg:h-12 top-45 cursor-pointer left-0"
+                      >
+                        <Image
+                          src={images.left}
+                          layout="fill"
+                          objectFit="contain"
+                          alt="left_arrow"
+                          className={theme === 'light' ? 'filter invert' : ''}
+                        />
+                      </div>
+                      <div
+                      // call above fucntion to scroll right
+                        onClick={() => handleScroll('right')}
+                        className="absolute w-8 h-8 minlg:w-12 minlg:h-12 top-45 cursor-pointer right-0"
+                      >
+                        <Image
+                          src={images.right}
+                          layout="fill"
+                          objectFit="contain"
+                          alt="right_arrow"
+                          className={theme === 'light' ? 'filter invert' : ''}
+                        />
+                      </div>
+                    </>
+                    )}
+                    {/* end of scroll button section */}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-10">
+                <div className="flexBetween mx-4 xs:mx-0 minlg:mx-8 sm:flex-col sm:items-start">
+                  <h1 className="flex-1 before:first:font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold sm:mb-4">
+                    Trending NFTs
+                  </h1>
+                  <div className="flex-2 sm:w-full flex flex-row sm:flex-col">
+                    <SearchBar
+                      activeSelect={activeSelect}
+                      setActiveSelect={setActiveSelect}
+                      handleSearch={onHandleSearch}
+                      clearSearch={onClearSearch}
+                    />
+                  </div>
+                </div>
+                {/* creating a flex wrapper and mapping the trending NFT art in it */}
+                <div className="mt-3 w-full flex flex-wrap justify-start md:justify-center">
+                  {nfts?.map((nft) => (
+                    <NFTCard
+                      key={nft.tokenId}
+                      nft={nft}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
         </div>
       </div>
     </div>
-
   );
 };
 

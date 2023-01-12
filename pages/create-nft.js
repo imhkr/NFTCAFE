@@ -4,14 +4,14 @@ import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/router';
-import { Button, Input } from '../components';
+import { Button, Input, Loader } from '../components';
 import images from '../assets';
 
 import { NFTContext } from '../context/NFTContext';
 
 const CreateNFT = () => {
   const router = useRouter();
-  const { uploadToIPFS, CreateNFT } = useContext(NFTContext);
+  const { uploadToIPFS, createNFT, isLoadingNFT } = useContext(NFTContext);
   const theme = useTheme();
   const [fileUrl, setfileUrl] = useState(null);
   const [formInput, setformInput] = useState({ price: '', name: '', description: ' ' });
@@ -37,6 +37,14 @@ const CreateNFT = () => {
     ),
     [isDragActive, isDragAccept, isDragReject],
   );
+
+  if (isLoadingNFT) {
+    return (
+      <div className="flexStart min-h-screen">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="flex justify-center sm:px-4 p-12">
       <div className="w-3/5 md:w-full">
@@ -97,7 +105,7 @@ const CreateNFT = () => {
           <Button
             BtnName="Create NFT"
             classStyles="rounded-xl"
-            handleClick={() => CreateNFT(formInput, fileUrl, router)}
+            handleClick={() => createNFT(formInput, fileUrl, router)}
           />
         </div>
       </div>
