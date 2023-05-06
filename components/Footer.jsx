@@ -55,7 +55,7 @@ const Footer = () => {
         <div className="flexBetween flex-row w-full minmd:w-4/5 sm:flex-col mt-7">
           <p className="font-poppins dark:text-white text-nft-black-1 font-semibold text-base ">NFTCAFE,Inc. All Rights Reserved.
             <p>
-              Made with <a href="https://github.com/imhkr/NFTCAFE" target="_blank" rel="noreferrer"> ❤️ By Himanshu,Gaurav,Prabhat</a>
+              Made with <a href="https://github.com/imhkr/NFTCAFE" target="_blank" rel="noreferrer"> ❤️ By Himanshu,Gaurav,Prabhat,Ayush</a>
             </p>
           </p>
 

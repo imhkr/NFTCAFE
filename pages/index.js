@@ -9,6 +9,7 @@ import images from '../assets';
 import { makeId } from '../utils/makeId';
 import { getCreators } from '../utils/getTopCreators';
 import { shortenAddress } from '../utils/shortenAddress';
+import VideoPlayer from '../components/VideoPlayer';
 
 const Home = () => {
   // state to check when to show scroll buttons
@@ -217,7 +218,7 @@ const Home = () => {
                   </div>
                 </div>
                 {/* creating a flex wrapper and mapping the trending NFT art in it */}
-                <div className="mt-3 w-full flex flex-wrap justify-start md:justify-center">
+                <div className="mt-3 w-full flex flex-wrap justify-start md:justify-center ">
                   {nfts?.map((nft) => (
                     <NFTCard
                       key={nft.tokenId}
@@ -231,6 +232,13 @@ const Home = () => {
 
         </div>
       </div>
+      {/* <div>
+        <h1 className="font-poppins dark:text-white text-nft-black-1 text-4xl minlg:text-4xl font-semibold ml-4 xs:ml-0 text-center -mb-16">
+          What is NFT?
+        </h1>
+        <VideoPlayer />
+        <img src='../assets' />
+      </div> */}
     </div>
   );
 };

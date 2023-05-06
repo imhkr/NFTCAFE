@@ -1,0 +1,24 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #24252D;
+  }
+  
+  .video {
+    max-height: 80%;
+    width: 100%;
+    max-width: 80rem;
+    border: 2px solid #3e4055;
+    border-radius: 10px;
+  }
+  
+  .video-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+  }
